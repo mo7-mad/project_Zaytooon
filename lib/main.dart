@@ -1,50 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'theme/zaytooon_theme.dart';
 import 'screens/home_screen.dart';
-import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/cart_screen.dart';
-import 'screens/order_confirmation_screen.dart';
 import 'screens/meal_details_screen.dart';
 import 'screens/settings_screen.dart';
 
 void main() {
-  runApp(const ZaytooonApp());
+  runApp(const MyApp());
 }
 
-class ZaytooonApp extends StatelessWidget {
-  const ZaytooonApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  List<Map<String, dynamic>> cartItems = [];
+
+  void addToCart(Map<String, dynamic> item) {
+    setState(() {
+      // إذا العنصر موجود زود الكمية فقط
+      final index = cartItems.indexWhere((e) => e['name'] == item['name']);
+      if (index != -1) {
+        cartItems[index]['qty'] += item['qty'];
+      } else {
+        cartItems.add(item);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'زيتون Zaytooon',
-      debugShowCheckedModeBanner: false,
-      theme: ZaytooonTheme.theme,
-      locale: const Locale('ar'),
-      supportedLocales: const [
-        Locale('ar', ''), // Arabic
-        Locale('en', ''), // English
-      ],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: const LoginScreen(),
+      title: 'Zaytooon',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),
       routes: {
-        '/home': (context) => const HomeScreen(),
+        '/home': (context) => HomeScreen(onAddToCart: addToCart),
         '/signup': (context) => const SignupScreen(),
-        '/cart': (context) => const CartScreen(),
-        '/details': (context) => MealDetailsScreen(
-              name: 'برجر دجاج',        // يمكنك تبديل القيم الافتراضية حسب حاجتك
-              img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80',
-              price: 18,
-              onAddToCart: (item) {},
-            ),
+        '/cart': (context) => CartScreen(initialCartItems: cartItems),
         '/settings': (context) => const SettingsScreen(),
       },
+      initialRoute: '/home',
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.rtl,

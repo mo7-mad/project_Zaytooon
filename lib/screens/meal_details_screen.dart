@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
-
 class MealDetailsScreen extends StatefulWidget {
   final String name;
   final String img;
   final int price;
+  final String desc;
 
   const MealDetailsScreen({
     super.key,
     required this.name,
     required this.img,
     required this.price,
+    required this.desc,
     required this.onAddToCart,
   });
 
@@ -36,6 +37,12 @@ class _MealDetailsScreenState extends State<MealDetailsScreen> {
             const SizedBox(height: 16),
             Text(widget.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
+            Text(
+              widget.desc,
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
             Text('${widget.price} ج.م', style: const TextStyle(fontSize: 18, color: Colors.green)),
             const SizedBox(height: 16),
             Row(
@@ -77,7 +84,7 @@ class _MealDetailsScreenState extends State<MealDetailsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('تمت إضافة المنتج إلى السلة!')),
                   );
-                  Navigator.pop(context); // العودة للشاشة السابقة
+                  Navigator.pop(context);
                 },
               ),
             ),

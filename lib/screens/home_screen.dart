@@ -10,7 +10,7 @@ final List<Map<String, dynamic>> meals = [
     "category": "وجبات",
   },
   {
-    "name": "بيتزا مارجريتا",
+    "name": "بيتزا مارغريتا",
     "img": "https://images.unsplash.com/photo-1542281286-9e0a16bb7366?auto=format&fit=crop&w=400&q=80",
     "price": 30,
     "desc": "بيتزا إيطالية بالجبن والطماطم الطازجة.",
@@ -22,6 +22,21 @@ final List<Map<String, dynamic>> meals = [
     "price": 10,
     "desc": "عصير برتقال طبيعي ومنعش.",
     "category": "مشروبات",
+  },
+  // أضف المزيد من الوجبات هنا
+  {
+    "name": "شاورما لحم",
+    "img": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=400&q=80",
+    "price": 22,
+    "desc": "شاورما لحم مع صوص طحينة وخضار.",
+    "category": "وجبات",
+  },
+  {
+    "name": "سلطة سيزر",
+    "img": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80",
+    "price": 15,
+    "desc": "سلطة سيزر بالدجاج وجبن البارميزان.",
+    "category": "سلطات",
   },
 ];
 

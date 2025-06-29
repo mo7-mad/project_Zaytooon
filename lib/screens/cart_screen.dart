@@ -33,20 +33,20 @@ class _CartScreenState extends State<CartScreen> {
                 ? const Center(child: Text('السلة فارغة'))
                 : ListView(
                     children: cartItems.map((item) => ListTile(
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(item["img"], width: 48),
-                      ),
-                      title: Text(item["name"]),
-                      subtitle: Text('الكمية: ${item["qty"]}'),
-                      trailing: Text(
-                        '${item["price"] * item["qty"]} ج.م',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF388E3C),
-                        ),
-                      ),
-                    )).toList(),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(item["img"], width: 48),
+                          ),
+                          title: Text(item["name"]),
+                          subtitle: Text('الكمية: ${item["qty"]}'),
+                          trailing: Text(
+                            '${item["price"] * item["qty"]} ج.م',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF388E3C),
+                            ),
+                          ),
+                        )).toList(),
                   ),
           ),
           Padding(
@@ -58,7 +58,8 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     const Text(
                       "الإجمالي:",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
                     Text(
                       '$total ج.م',
@@ -84,10 +85,9 @@ class _CartScreenState extends State<CartScreen> {
                     onPressed: cartItems.isEmpty
                         ? null
                         : () async {
-                            // رسالة تأكيد
-                            String summary = cartItems.map((item) =>
-                              "${item['qty']} ${item['name']}"
-                            ).join(" و ");
+                            String summary = cartItems
+                                .map((item) => "${item['qty']} ${item['name']}")
+                                .join(" و ");
 
                             bool? confirmed = await showDialog<bool>(
                               context: context,
@@ -99,11 +99,13 @@ class _CartScreenState extends State<CartScreen> {
                                 actions: [
                                   TextButton(
                                     child: const Text('إلغاء'),
-                                    onPressed: () => Navigator.pop(context, false),
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
                                   ),
                                   ElevatedButton(
                                     child: const Text('تأكيد'),
-                                    onPressed: () => Navigator.pop(context, true),
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
                                   ),
                                 ],
                               ),
@@ -117,14 +119,16 @@ class _CartScreenState extends State<CartScreen> {
                                     orderNumber: "12345",
                                     totalAmount: total.toDouble(),
                                     customerName: "ضيفنا العزيز",
-                                    estimatedDelivery: DateTime.now().add(const Duration(hours: 1)),
+                                    estimatedDelivery: DateTime.now()
+                                        .add(const Duration(hours: 1)),
                                     orderItems: cartItems,
                                   ),
                                 ),
                               );
                             }
                           },
-                    child: const Text('تأكيد الطلب', style: TextStyle(fontSize: 18)),
+                    child: const Text('تأكيد الطلب',
+                        style: TextStyle(fontSize: 18)),
                   ),
                 ),
               ],
