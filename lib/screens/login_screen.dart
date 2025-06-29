@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/zaytooon_theme.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,12 +11,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  String? email, password;
+  String? _email, _password;
+  bool _loading = false;
+  String? _errorMsg;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ZaytooonTheme.background,
+      backgroundColor: const Color(0xFFF5F5F5),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -30,50 +33,79 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset('assets/images/zaytooon_logo.png', height: 80), // ضع شعار زيتون هنا
+                      Image.asset('assets/images/zaytooon_logo.png', height: 80),
                       const SizedBox(height: 12),
                       const Text(
                         "تسجيل الدخول إلى زيتون",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: ZaytooonTheme.primary,
+                          color: Color(0xFF5B9821),
                         ),
                       ),
                       const SizedBox(height: 10),
-                      // الجملة الدعائية
                       const Text(
                         "مع زيتون الجوع يهون",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: ZaytooonTheme.accent,
+                          color: Color(0xFFE4C062),
                         ),
                       ),
                       const SizedBox(height: 18),
                       TextFormField(
                         decoration: const InputDecoration(labelText: 'البريد الإلكتروني'),
                         keyboardType: TextInputType.emailAddress,
-                        onSaved: (v) => email = v,
-                        validator: (v) => v!.isEmpty ? 'أدخل البريد الإلكتروني' : null,
+                        onSaved: (v) => _email = v,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'أدخل البريد الإلكتروني' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         decoration: const InputDecoration(labelText: 'كلمة المرور'),
                         obscureText: true,
-                        onSaved: (v) => password = v,
-                        validator: (v) => v!.isEmpty ? 'أدخل كلمة المرور' : null,
+                        onSaved: (v) => _password = v,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'أدخل كلمة المرور' : null,
                       ),
                       const SizedBox(height: 20),
+                      if (_errorMsg != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Text(
+                            _errorMsg!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              Navigator.pushReplacementNamed(context, '/home');
-                            }
-                          },
-                          child: const Text('دخول'),
+                          onPressed: _loading
+                              ? null
+                              : () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    _formKey.currentState!.save();
+                                    setState(() {
+                                      _loading = true;
+                                      _errorMsg = null;
+                                    });
+                                    try {
+                                      await Provider.of<UserProvider>(context, listen: false)
+                                          .login(email: _email!, password: _password!);
+                                      Navigator.pushReplacementNamed(context, '/home');
+                                    } catch (e) {
+                                      setState(() {
+                                        _errorMsg = e.toString().replaceAll('Exception: ', '');
+                                      });
+                                    }
+                                    setState(() {
+                                      _loading = false;
+                                    });
+                                  }
+                                },
+                          child: _loading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text('دخول'),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -82,21 +114,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           const Text("ليس لديك حساب؟"),
                           TextButton(
-                            onPressed: () => Navigator.pushNamed(context, '/signup'),
+                            onPressed: () => Navigator.pushReplacementNamed(context, '/signup'),
                             child: const Text('إنشاء حساب'),
                           ),
                         ],
-                      ),
-                      const Divider(),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.email),
-                          label: const Text('تسجيل الدخول عبر الإيميل'),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("ميزة قيد التطوير")));
-                          },
-                        ),
                       ),
                     ],
                   ),

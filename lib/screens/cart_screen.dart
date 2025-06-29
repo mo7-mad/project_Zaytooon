@@ -1,198 +1,115 @@
 import 'package:flutter/material.dart';
-import 'order_confirmation_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
+import '../theme/zaytooon_theme.dart';
 
-class CartScreen extends StatefulWidget {
-  final List<Map<String, dynamic>> initialCartItems;
-  final void Function(int index)? onRemove;
-  final VoidCallback? onClear;
-  const CartScreen({
-    super.key,
-    this.initialCartItems = const [],
-    this.onRemove,
-    this.onClear,
-  });
-
-  @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  late List<Map<String, dynamic>> cartItems;
-
-  @override
-  void initState() {
-    super.initState();
-    cartItems = List<Map<String, dynamic>>.from(widget.initialCartItems);
-  }
-
-  int get total => cartItems.fold(
-      0, (sum, item) => sum + (item["price"] as int) * (item["qty"] as int));
+class CartScreen extends StatelessWidget {
+  const CartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('سلة الطلبات'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_forever),
-            tooltip: 'إفراغ السلة',
-            onPressed: cartItems.isEmpty
-                ? null
-                : () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('تأكيد'),
-                        content: const Text('هل تريد حذف جميع العناصر من السلة؟'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('إلغاء'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              widget.onClear?.call();
-                              setState(() => cartItems.clear());
-                              Navigator.pop(context);
-                            },
-                            child: const Text('نعم'),
-                          )
-                        ],
+          if (cartProvider.items.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_forever),
+              tooltip: 'إفراغ السلة',
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('تأكيد'),
+                    content: const Text('هل تريد فعلاً إفراغ السلة؟'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('إلغاء'),
                       ),
-                    );
-                  },
-          ),
-        ],
-      ),
-      backgroundColor: const Color(0xFFF8FFF2),
-      body: Column(
-        children: [
-          Expanded(
-            child: cartItems.isEmpty
-                ? const Center(child: Text('السلة فارغة'))
-                : ListView.builder(
-                    itemCount: cartItems.length,
-                    itemBuilder: (context, index) {
-                      final item = cartItems[index];
-                      return ListTile(
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(item["img"], width: 48),
-                        ),
-                        title: Text(item["name"]),
-                        subtitle: Text('الكمية: ${item["qty"]}'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${item["price"] * item["qty"]} ج.م',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF388E3C),
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              tooltip: 'حذف',
-                              onPressed: () {
-                                widget.onRemove?.call(index);
-                                setState(() => cartItems.removeAt(index));
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                      TextButton(
+                        onPressed: () {
+                          cartProvider.clearCart();
+                          Navigator.pop(ctx);
+                        },
+                        child: const Text('نعم'),
+                      ),
+                    ],
                   ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(22),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "الإجمالي:",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    Text(
-                      '$total ج.م',
-                      style: const TextStyle(
-                        color: Color(0xFFE53935),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF388E3C),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: cartItems.isEmpty
-                        ? null
-                        : () async {
-                            String summary = cartItems
-                                .map((item) => "${item['qty']} ${item['name']}")
-                                .join(" و ");
-
-                            bool? confirmed = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('تأكيد الطلب'),
-                                content: Text(
-                                  'أنت على وشك طلب: $summary\nهل أنت متأكد من متابعة الطلب؟',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    child: const Text('إلغاء'),
-                                    onPressed: () =>
-                                        Navigator.pop(context, false),
-                                  ),
-                                  ElevatedButton(
-                                    child: const Text('تأكيد'),
-                                    onPressed: () =>
-                                        Navigator.pop(context, true),
-                                  ),
-                                ],
-                              ),
-                            );
-
-                            if (confirmed == true) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => OrderConfirmationScreen(
-                                    orderNumber: "12345",
-                                    totalAmount: total.toDouble(),
-                                    customerName: "ضيفنا العزيز",
-                                    estimatedDelivery: DateTime.now()
-                                        .add(const Duration(hours: 1)),
-                                    orderItems: cartItems,
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                    child: const Text('تأكيد الطلب',
-                        style: TextStyle(fontSize: 18)),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
-          ),
         ],
       ),
+      body: cartProvider.items.isEmpty
+          ? const Center(
+              child: Text(
+                'السلة فارغة',
+                style: TextStyle(fontSize: 22, color: ZaytooonTheme.darkText),
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.all(18),
+              itemCount: cartProvider.items.length,
+              separatorBuilder: (_, __) => const Divider(),
+              itemBuilder: (context, index) {
+                final item = cartProvider.items[index];
+                return ListTile(
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      item['img'],
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  title: Text(item['name']),
+                  subtitle: Text('الكمية: ${item['qty']}'),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('${item['price'] * item['qty']} ر.س'),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          cartProvider.removeFromCart(item['name']);
+                        },
+                        tooltip: 'حذف',
+                      )
+                    ],
+                  ),
+                );
+              },
+            ),
+      bottomNavigationBar: cartProvider.items.isEmpty
+          ? null
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ZaytooonTheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: const Icon(Icons.check),
+                  label: Text(
+                    'إتمام الطلب (${cartProvider.totalPrice} ر.س)',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/order_confirmation');
+                  },
+                ),
+              ),
+            ),
     );
   }
 }

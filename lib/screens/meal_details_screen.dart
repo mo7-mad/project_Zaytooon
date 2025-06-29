@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../theme/zaytooon_theme.dart';
+import '../providers/cart_provider.dart';
 
 class MealDetailsScreen extends StatefulWidget {
-  final String name;
-  final String img;
-  final int price;
-  final String desc;
-
-  const MealDetailsScreen({
-    super.key,
-    required this.name,
-    required this.img,
-    required this.price,
-    required this.desc,
-    required this.onAddToCart,
-  });
-
-  final void Function(Map<String, dynamic> item) onAddToCart;
+  const MealDetailsScreen({super.key});
 
   @override
   State<MealDetailsScreen> createState() => _MealDetailsScreenState();
@@ -23,69 +12,112 @@ class MealDetailsScreen extends StatefulWidget {
 
 class _MealDetailsScreenState extends State<MealDetailsScreen> {
   int qty = 1;
+  bool addedToCart = false;
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic>? meal =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (meal == null) {
+      return const Scaffold(body: Center(child: Text('لا يوجد بيانات للوجبة')));
+    }
+
     return Scaffold(
-      appBar: AppBar(title: Text(widget.name)),
+      backgroundColor: ZaytooonTheme.background,
+      appBar: AppBar(
+        title: Text(meal['name']),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(22),
+        padding: const EdgeInsets.all(18),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(widget.img, height: 200),
-            const SizedBox(height: 16),
-            Text(widget.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Image.network(
+                  meal['img'],
+                  height: 180,
+                  width: 220,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
             Text(
-              widget.desc,
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
-              textAlign: TextAlign.center,
+              meal['name'],
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+                color: ZaytooonTheme.primary,
+              ),
+            ),
+            Text(
+              meal['desc'],
+              style: const TextStyle(fontSize: 16, color: ZaytooonTheme.darkText),
             ),
             const SizedBox(height: 12),
-            Text('${widget.price} ج.م', style: const TextStyle(fontSize: 18, color: Colors.green)),
-            const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.remove_circle_outline),
-                  onPressed: () {
-                    if (qty > 1) setState(() => qty--);
-                  },
-                ),
-                Text('$qty', style: const TextStyle(fontSize: 20)),
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline),
-                  onPressed: () {
-                    setState(() => qty++);
-                  },
+                const Icon(Icons.attach_money, color: ZaytooonTheme.secondary),
+                const SizedBox(width: 6),
+                Text(
+                  '${meal['price']} ريال',
+                  style: const TextStyle(
+                      color: ZaytooonTheme.secondary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20),
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                const Text('الكمية:', style: TextStyle(fontSize: 16)),
+                IconButton(
+                  icon: const Icon(Icons.remove),
+                  onPressed: qty > 1 ? () => setState(() => qty--) : null,
+                ),
+                Text('$qty', style: const TextStyle(fontSize: 18)),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () => setState(() => qty++),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                icon: const Icon(Icons.shopping_cart),
-                label: const Text('أضف إلى السلة'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: ZaytooonTheme.primary,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                onPressed: () {
-                  widget.onAddToCart({
-                    "name": widget.name,
-                    "price": widget.price,
-                    "img": widget.img,
-                    "qty": qty,
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('تمت إضافة المنتج إلى السلة!')),
-                  );
-                  Navigator.pop(context);
-                },
+                icon: const Icon(Icons.add_shopping_cart),
+                label: Text(
+                  addedToCart ? 'تمت الإضافة!' : 'أضف للسلة',
+                  style: const TextStyle(fontSize: 18),
+                ),
+                onPressed: addedToCart
+                    ? null
+                    : () {
+                        Provider.of<CartProvider>(context, listen: false).addToCart({
+                          'name': meal['name'],
+                          'img': meal['img'],
+                          'price': meal['price'],
+                          'qty': qty,
+                        });
+                        setState(() => addedToCart = true);
+                        Future.delayed(const Duration(milliseconds: 1200), () {
+                          if (mounted) {
+                            setState(() => addedToCart = false);
+                          }
+                        });
+                      },
               ),
             ),
           ],
