@@ -1,62 +1,83 @@
 import 'package:flutter/material.dart';
 
+
 class MealDetailsScreen extends StatefulWidget {
-  const MealDetailsScreen({super.key});
+  final String name;
+  final String img;
+  final int price;
+
+  const MealDetailsScreen({
+    super.key,
+    required this.name,
+    required this.img,
+    required this.price,
+    required this.onAddToCart,
+  });
+
+  final void Function(Map<String, dynamic> item) onAddToCart;
 
   @override
   State<MealDetailsScreen> createState() => _MealDetailsScreenState();
 }
 
 class _MealDetailsScreenState extends State<MealDetailsScreen> {
-  int quantity = 1;
+  int qty = 1;
 
   @override
   Widget build(BuildContext context) {
-    final meal = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     return Scaffold(
-      appBar: AppBar(title: Text(meal['name'])),
-      backgroundColor: const Color(0xFFF8FFF2),
+      appBar: AppBar(title: Text(widget.name)),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(22),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: Image.network(meal['img'], width: double.infinity, height: 180, fit: BoxFit.cover),
-            ),
+            Image.network(widget.img, height: 200),
             const SizedBox(height: 16),
-            Text(meal['name'], style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            Text(widget.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text(meal['desc'], style: const TextStyle(fontSize: 16, color: Colors.black87)),
-            const SizedBox(height: 24),
+            Text('${widget.price} ج.م', style: const TextStyle(fontSize: 18, color: Colors.green)),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.remove_circle, color: Color(0xFFFF9800), size: 32),
-                  onPressed: quantity > 1 ? () => setState(() => quantity--) : null,
+                  icon: const Icon(Icons.remove_circle_outline),
+                  onPressed: () {
+                    if (qty > 1) setState(() => qty--);
+                  },
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text('$quantity', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                ),
+                Text('$qty', style: const TextStyle(fontSize: 20)),
                 IconButton(
-                  icon: const Icon(Icons.add_circle, color: Color(0xFF388E3C), size: 32),
-                  onPressed: () => setState(() => quantity++),
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: () {
+                    setState(() => qty++);
+                  },
                 ),
               ],
             ),
             const SizedBox(height: 18),
-            Text('المجموع: ${meal['price'] * quantity} ج.م', style: const TextStyle(fontSize: 18, color: Color(0xFF388E3C))),
-            const Spacer(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                icon: const Icon(Icons.shopping_cart_checkout),
+                icon: const Icon(Icons.shopping_cart),
                 label: const Text('أضف إلى السلة'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت إضافة الوجبة للسلة!')));
-                  Navigator.pop(context);
+                  widget.onAddToCart({
+                    "name": widget.name,
+                    "price": widget.price,
+                    "img": widget.img,
+                    "qty": qty,
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('تمت إضافة المنتج إلى السلة!')),
+                  );
+                  Navigator.pop(context); // العودة للشاشة السابقة
                 },
               ),
             ),

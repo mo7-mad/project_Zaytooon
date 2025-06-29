@@ -28,7 +28,7 @@ class ZaytooonTheme {
           backgroundColor: secondary,
           foregroundColor: Colors.white,
           textStyle: const TextStyle(fontWeight: FontWeight.bold),
-          shape: RoundedRectangleBorder(
+          shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
         ),
