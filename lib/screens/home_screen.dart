@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/zaytooon_theme.dart';
+import 'meal_details_screen.dart';
 
 final List<Map<String, dynamic>> meals = [
   {
@@ -23,7 +24,6 @@ final List<Map<String, dynamic>> meals = [
     "desc": "عصير برتقال طبيعي ومنعش.",
     "category": "مشروبات",
   },
-  // أضف المزيد من الوجبات هنا
   {
     "name": "شاورما لحم",
     "img": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=400&q=80",
@@ -41,7 +41,8 @@ final List<Map<String, dynamic>> meals = [
 ];
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final void Function(Map<String, dynamic>) onAddToCart;
+  const HomeScreen({super.key, required this.onAddToCart});
 
   @override
   Widget build(BuildContext context) {
@@ -96,17 +97,30 @@ class HomeScreen extends StatelessWidget {
                   ),
                   subtitle: Text(
                     meal['desc'],
-                    style: const TextStyle(color: ZaytooonTheme.darkText),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  trailing: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ZaytooonTheme.secondary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  trailing: Text(
+                    '${meal['price']} ج.م',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: ZaytooonTheme.primary,
                     ),
-                    onPressed: () => Navigator.pushNamed(context, '/details', arguments: meal),
-                    child: const Text('اطلب'),
                   ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MealDetailsScreen(
+                          name: meal['name'],
+                          img: meal['img'],
+                          price: meal['price'],
+                          desc: meal['desc'],
+                          onAddToCart: onAddToCart,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               )),
         ],

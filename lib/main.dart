@@ -21,7 +21,6 @@ class _MyAppState extends State<MyApp> {
 
   void addToCart(Map<String, dynamic> item) {
     setState(() {
-      // إذا العنصر موجود زود الكمية فقط
       final index = cartItems.indexWhere((e) => e['name'] == item['name']);
       if (index != -1) {
         cartItems[index]['qty'] += item['qty'];
