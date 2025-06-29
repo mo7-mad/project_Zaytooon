@@ -3,7 +3,14 @@ import 'order_confirmation_screen.dart';
 
 class CartScreen extends StatefulWidget {
   final List<Map<String, dynamic>> initialCartItems;
-  const CartScreen({super.key, this.initialCartItems = const []});
+  final void Function(int index)? onRemove;
+  final VoidCallback? onClear;
+  const CartScreen({
+    super.key,
+    this.initialCartItems = const [],
+    this.onRemove,
+    this.onClear,
+  });
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -24,29 +31,79 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('سلة الطلبات')),
+      appBar: AppBar(
+        title: const Text('سلة الطلبات'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_forever),
+            tooltip: 'إفراغ السلة',
+            onPressed: cartItems.isEmpty
+                ? null
+                : () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('تأكيد'),
+                        content: const Text('هل تريد حذف جميع العناصر من السلة؟'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('إلغاء'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              widget.onClear?.call();
+                              setState(() => cartItems.clear());
+                              Navigator.pop(context);
+                            },
+                            child: const Text('نعم'),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+          ),
+        ],
+      ),
       backgroundColor: const Color(0xFFF8FFF2),
       body: Column(
         children: [
           Expanded(
             child: cartItems.isEmpty
                 ? const Center(child: Text('السلة فارغة'))
-                : ListView(
-                    children: cartItems.map((item) => ListTile(
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(item["img"], width: 48),
-                          ),
-                          title: Text(item["name"]),
-                          subtitle: Text('الكمية: ${item["qty"]}'),
-                          trailing: Text(
-                            '${item["price"] * item["qty"]} ج.م',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF388E3C),
+                : ListView.builder(
+                    itemCount: cartItems.length,
+                    itemBuilder: (context, index) {
+                      final item = cartItems[index];
+                      return ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(item["img"], width: 48),
+                        ),
+                        title: Text(item["name"]),
+                        subtitle: Text('الكمية: ${item["qty"]}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${item["price"] * item["qty"]} ج.م',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF388E3C),
+                              ),
                             ),
-                          ),
-                        )).toList(),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              tooltip: 'حذف',
+                              onPressed: () {
+                                widget.onRemove?.call(index);
+                                setState(() => cartItems.removeAt(index));
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
           ),
           Padding(
