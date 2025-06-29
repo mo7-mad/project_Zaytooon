@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/cart_screen.dart';
@@ -18,6 +19,20 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   List<Map<String, dynamic>> cartItems = [];
+  bool? isRegistered;
+
+  @override
+  void initState() {
+    super.initState();
+    checkRegistration();
+  }
+
+  Future<void> checkRegistration() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isRegistered = prefs.getBool('is_registered') ?? false;
+    });
+  }
 
   void addToCart(Map<String, dynamic> item) {
     setState(() {
@@ -30,8 +45,28 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void removeFromCart(int index) {
+    setState(() {
+      cartItems.removeAt(index);
+    });
+  }
+
+  void clearCart() {
+    setState(() {
+      cartItems.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // لا تذهب لبناء التطبيق إلا إذا isRegistered != null
+    if (isRegistered == null) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
     return MaterialApp(
       title: 'Zaytooon',
       theme: ThemeData(
@@ -39,11 +74,19 @@ class _MyAppState extends State<MyApp> {
       ),
       routes: {
         '/home': (context) => HomeScreen(onAddToCart: addToCart),
-        '/signup': (context) => const SignupScreen(),
-        '/cart': (context) => CartScreen(initialCartItems: cartItems),
+        '/signup': (context) => SignupScreen(onRegister: () {
+              setState(() {
+                isRegistered = true;
+              });
+            }),
+        '/cart': (context) => CartScreen(
+              initialCartItems: cartItems,
+              onRemove: removeFromCart,
+              onClear: clearCart,
+            ),
         '/settings': (context) => const SettingsScreen(),
       },
-      initialRoute: '/home',
+      initialRoute: isRegistered! ? '/home' : '/signup',
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.rtl,
