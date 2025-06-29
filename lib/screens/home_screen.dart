@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/zaytooon_theme.dart';
-import 'meal_details_screen.dart';
+import '../providers/cart_provider.dart';
 
 final List<Map<String, dynamic>> meals = [
   {
@@ -11,7 +12,7 @@ final List<Map<String, dynamic>> meals = [
     "category": "وجبات",
   },
   {
-    "name": "بيتزا مارغريتا",
+    "name": "بيتزا مارجريتا",
     "img": "https://images.unsplash.com/photo-1542281286-9e0a16bb7366?auto=format&fit=crop&w=400&q=80",
     "price": 30,
     "desc": "بيتزا إيطالية بالجبن والطماطم الطازجة.",
@@ -24,28 +25,14 @@ final List<Map<String, dynamic>> meals = [
     "desc": "عصير برتقال طبيعي ومنعش.",
     "category": "مشروبات",
   },
-  {
-    "name": "شاورما لحم",
-    "img": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=400&q=80",
-    "price": 22,
-    "desc": "شاورما لحم مع صوص طحينة وخضار.",
-    "category": "وجبات",
-  },
-  {
-    "name": "سلطة سيزر",
-    "img": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80",
-    "price": 15,
-    "desc": "سلطة سيزر بالدجاج وجبن البارميزان.",
-    "category": "سلطات",
-  },
 ];
 
 class HomeScreen extends StatelessWidget {
-  final void Function(Map<String, dynamic>) onAddToCart;
-  const HomeScreen({super.key, required this.onAddToCart});
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
     return Scaffold(
       backgroundColor: ZaytooonTheme.background,
       appBar: AppBar(
@@ -57,10 +44,28 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/cart'),
-        tooltip: 'السلة',
-        child: const Icon(Icons.shopping_cart),
+      floatingActionButton: Stack(
+        alignment: Alignment.topLeft,
+        children: [
+          FloatingActionButton(
+            onPressed: () => Navigator.pushNamed(context, '/cart'),
+            tooltip: 'السلة',
+            child: const Icon(Icons.shopping_cart),
+          ),
+          if (cartProvider.items.isNotEmpty)
+            Positioned(
+              left: 0,
+              top: 0,
+              child: CircleAvatar(
+                backgroundColor: Colors.red,
+                radius: 12,
+                child: Text(
+                  '${cartProvider.items.length}',
+                  style: const TextStyle(fontSize: 12, color: Colors.white),
+                ),
+              ),
+            ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -97,30 +102,23 @@ class HomeScreen extends StatelessWidget {
                   ),
                   subtitle: Text(
                     meal['desc'],
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: ZaytooonTheme.darkText),
                   ),
-                  trailing: Text(
-                    '${meal['price']} ج.م',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: ZaytooonTheme.primary,
+                  trailing: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ZaytooonTheme.secondary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
+                    onPressed: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/details',
+                        arguments: meal,
+                      );
+                    },
+                    child: const Text('تفاصيل'),
                   ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MealDetailsScreen(
-                          name: meal['name'],
-                          img: meal['img'],
-                          price: meal['price'],
-                          desc: meal['desc'],
-                          onAddToCart: onAddToCart,
-                        ),
-                      ),
-                    );
-                  },
                 ),
               )),
         ],

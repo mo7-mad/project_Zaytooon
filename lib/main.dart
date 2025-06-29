@@ -1,92 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/home_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'theme/zaytooon_theme.dart';
+import 'providers/user_provider.dart';
+import 'providers/cart_provider.dart';
+import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
-import 'screens/cart_screen.dart';
+import 'screens/home_screen.dart';
 import 'screens/meal_details_screen.dart';
+import 'screens/cart_screen.dart';
+import 'screens/order_confirmation_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/location_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+        ChangeNotifierProvider<CartProvider>(create: (_) => CartProvider()),
+      ],
+      child: const ZaytooonApp(),
+    ),
+  );
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  List<Map<String, dynamic>> cartItems = [];
-  bool? isRegistered;
-
-  @override
-  void initState() {
-    super.initState();
-    checkRegistration();
-  }
-
-  Future<void> checkRegistration() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      isRegistered = prefs.getBool('is_registered') ?? false;
-    });
-  }
-
-  void addToCart(Map<String, dynamic> item) {
-    setState(() {
-      final index = cartItems.indexWhere((e) => e['name'] == item['name']);
-      if (index != -1) {
-        cartItems[index]['qty'] += item['qty'];
-      } else {
-        cartItems.add(item);
-      }
-    });
-  }
-
-  void removeFromCart(int index) {
-    setState(() {
-      cartItems.removeAt(index);
-    });
-  }
-
-  void clearCart() {
-    setState(() {
-      cartItems.clear();
-    });
-  }
+class ZaytooonApp extends StatelessWidget {
+  const ZaytooonApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // لا تذهب لبناء التطبيق إلا إذا isRegistered != null
-    if (isRegistered == null) {
-      return const MaterialApp(
-        home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-      );
-    }
     return MaterialApp(
-      title: 'Zaytooon',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
+      title: 'زيتون Zaytooon',
+      debugShowCheckedModeBanner: false,
+      theme: ZaytooonTheme.theme,
+      locale: const Locale('ar'),
+      supportedLocales: const [
+        Locale('ar', ''), // Arabic
+        Locale('en', ''), // English
+      ],
+      localizationsDelegates: const [
+        // أضف ديليجات اللغات الأساسية هنا
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        // إذا عندك ديليجيت خاص بك أضفه هنا (مثلا: AppLocalizations.delegate)
+      ],
+      initialRoute: '/',
       routes: {
-        '/home': (context) => HomeScreen(onAddToCart: addToCart),
-        '/signup': (context) => SignupScreen(onRegister: () {
-              setState(() {
-                isRegistered = true;
-              });
-            }),
-        '/cart': (context) => CartScreen(
-              initialCartItems: cartItems,
-              onRemove: removeFromCart,
-              onClear: clearCart,
-            ),
+        '/': (context) => const SplashScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignupScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/details': (context) => const MealDetailsScreen(),
+        '/cart': (context) => const CartScreen(),
+        '/order_confirmation': (context) => const OrderConfirmationScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/location': (context) => const LocationScreen(),
       },
-      initialRoute: isRegistered! ? '/home' : '/signup',
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.rtl,

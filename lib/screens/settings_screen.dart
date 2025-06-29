@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 import '../theme/zaytooon_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -6,46 +8,82 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('الإعدادات')),
-      backgroundColor: ZaytooonTheme.background,
+      appBar: AppBar(
+        title: const Text('الإعدادات'),
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         children: [
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  const Icon(Icons.account_circle, size: 64, color: ZaytooonTheme.primary),
+                  const SizedBox(height: 12),
+                  Text(
+                    userProvider.username ?? 'مستخدم',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    userProvider.email ?? '',
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  if (userProvider.phone != null)
+                    Text(
+                      userProvider.phone!,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
           ListTile(
-            leading: const Icon(Icons.language, color: ZaytooonTheme.primary),
+            leading: const Icon(Icons.language, color: ZaytooonTheme.secondary),
             title: const Text('اللغة'),
             subtitle: const Text('العربية'),
-            onTap: () {},
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('التطبيق يدعم العربية فقط حالياً')),
+              );
+            },
           ),
+          const Divider(),
           ListTile(
-            leading: const Icon(Icons.info, color: ZaytooonTheme.secondary),
-            title: const Text('عن التطبيق'),
-            subtitle: const Text('تطبيق زيتون - مع زيتون الجوع يهون'),
+            leading: const Icon(Icons.info_outline, color: ZaytooonTheme.secondary),
+            title: const Text('عن زيتون'),
+            subtitle: const Text('تطبيق طلبات الطعام بخدمة سريعة واحترافية.\nإصدار 1.0.0'),
             onTap: () {},
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.phone_android, color: ZaytooonTheme.secondary),
-            title: const Text('الدعم الفني'),
-            subtitle: const Text('تواصل معنا لأي مشكلة أو استفسار'),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.privacy_tip, color: ZaytooonTheme.accent),
-            title: const Text('سياسة الخصوصية'),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.star_rate, color: Colors.amber),
-            title: const Text('قيّم التطبيق'),
-            onTap: () {},
-          ),
-          ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('تسجيل الخروج'),
-            onTap: () {
-              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+            onTap: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('تأكيد الخروج'),
+                  content: const Text('هل أنت متأكد أنك تريد تسجيل الخروج؟'),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
+                    TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('تأكيد')),
+                  ],
+                ),
+              );
+              if (confirm == true) {
+                await userProvider.logout();
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                }
+              }
             },
           ),
         ],

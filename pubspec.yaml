@@ -1,6 +1,7 @@
-name: zaytooon
+name: project_zaytooon
 description: تطبيق زيتون - مع زيتون الجوع يهون
-publish_to: "none"
+publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
@@ -9,26 +10,25 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
+
+  provider: ^6.0.5
+  shared_preferences: ^2.2.2
+  cached_network_image: ^3.3.1
+  cupertino_icons: ^1.0.6
+
+  # لإضافة دعم الترجمة والتعريب في Flutter
   flutter_localizations:
     sdk: flutter
-  shared_preferences: ^2.2.2
-  share_plus: ^7.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
   flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
-
-  fonts:
-    - family: Cairo
-      fonts:
-        - asset: assets/fonts/Cairo-Regular.ttf
-        - asset: assets/fonts/Cairo-Bold.ttf
-          weight: 700
+    - assets/images/zaytooon_logo.png
+    # أضف هنا أي صور أو ملفات أخرى تحتاجها في المشروع
